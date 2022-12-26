@@ -10,9 +10,9 @@ def consider_mvmt(elf: list, grid):
         return True
     return False
 
-def propose_mvmt(elf: list, grid):
+def propose_mvmt(elf: list, dirs: list, grid):
     x, y = elf[1], elf[0]
-    for dir in elf[2]:
+    for dir in dirs:
         if dir == 'n':
             if (grid[y-1][x] != '#' and grid[y-1][x+1] != '#'
                 and grid[y-1][x-1] != '#'):
@@ -43,22 +43,25 @@ with open("input.txt", 'r') as f:
         for i in range(len(tokens)):
             grid[y_start][x_start + i] = tokens[i]
             if tokens[i] == '#':
-                dir = deque('nswe')
-                elves.append([y_start, x_start + i, dir])
+                
+                elves.append([y_start, x_start + i])
         y_start += 1
 f.close()
 count = 0
 keep_going = 1
+dirs = deque('nswe')
 while (keep_going):
     keep_going = 0
     proposed.clear()
+    # if count == 10:
+    #     break
     # First half
     # Consider the 8 positions for each elf
     for elf in elves:
         if not consider_mvmt(elf, grid):
             keep_going = 1
-            if propose_mvmt(elf, grid):
-                proposed[propose_mvmt(elf, grid)].append(elf)
+            if propose_mvmt(elf, dirs, grid):
+                proposed[propose_mvmt(elf, dirs, grid)].append(elf)
     # Second half
     for mvt in proposed:
         if len(proposed[mvt]) == 1:
@@ -66,9 +69,8 @@ while (keep_going):
             grid[elf[0]][elf[1]] = '.'
             grid[mvt[0]][mvt[1]] = '#'
             elves.remove(elf)
-            elves.append([mvt[0], mvt[1], elf[2]])
-    for elf in elves:
-        elf[2].append(elf[2].popleft())
+            elves.append([mvt[0], mvt[1]])
+    dirs.append(dirs.popleft())
     count += 1
 xmin, xmax = 5000, 0
 ymin, ymax = 5000, 0
